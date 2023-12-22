@@ -1,0 +1,86 @@
+diff --git a/gradle.properties b/gradle.properties
+index b3e8f1f22cb..23f0ca0ecd3 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -2,7 +2,7 @@
+ # Platform metadata for releases, POM generation, etc.
+ ##################################################
+ group=org.apereo.cas
+-version=6.5.10-SNAPSHOT
++version=6.5.5
+ projectUrl=https://www.apereo.org/cas
+ projectInceptionYear=2004
+ projectScmUrl=scm:git@github.com:apereo/cas.git
+diff --git a/support/cas-server-support-jpa-ticket-registry/src/main/java/org/apereo/cas/ticket/registry/JpaTicketEntityFactory.java b/support/cas-server-support-jpa-ticket-registry/src/main/java/org/apereo/cas/ticket/registry/JpaTicketEntityFactory.java
+index 0646bf35bc6..99725184f22 100644
+--- a/support/cas-server-support-jpa-ticket-registry/src/main/java/org/apereo/cas/ticket/registry/JpaTicketEntityFactory.java
++++ b/support/cas-server-support-jpa-ticket-registry/src/main/java/org/apereo/cas/ticket/registry/JpaTicketEntityFactory.java
+@@ -10,6 +10,7 @@ import org.apereo.cas.ticket.registry.generic.BaseTicketEntity;
+ import org.apereo.cas.ticket.registry.generic.JpaTicketEntity;
+ import org.apereo.cas.ticket.registry.mysql.MySQLJpaTicketEntity;
+ import org.apereo.cas.ticket.registry.postgres.PostgresJpaTicketEntity;
++import org.apereo.cas.ticket.registry.derby.DerbyJpaTicketEntity;
+ import org.apereo.cas.ticket.serialization.TicketSerializationManager;
+ import org.apereo.cas.util.spring.ApplicationContextProvider;
+ 
+@@ -106,6 +107,9 @@ public class JpaTicketEntityFactory extends AbstractJpaEntityFactory<BaseTicketE
+         if (isPostgres()) {
+             return PostgresJpaTicketEntity.class;
+         }
++        if (isDerby()) {
++            return DerbyJpaTicketEntity.class;
++        }
+         return JpaTicketEntity.class;
+     }
+ 
+diff --git a/support/cas-server-support-jpa-ticket-registry/src/main/java/org/apereo/cas/ticket/registry/derby/DerbyJpaTicketEntity.java b/support/cas-server-support-jpa-ticket-registry/src/main/java/org/apereo/cas/ticket/registry/derby/DerbyJpaTicketEntity.java
+new file mode 100644
+index 00000000000..352425999a8
+--- /dev/null
++++ b/support/cas-server-support-jpa-ticket-registry/src/main/java/org/apereo/cas/ticket/registry/derby/DerbyJpaTicketEntity.java
+@@ -0,0 +1,28 @@
++package org.apereo.cas.ticket.registry.derby;
++
++import org.apereo.cas.ticket.registry.generic.BaseTicketEntity;
++
++import lombok.NoArgsConstructor;
++import lombok.experimental.SuperBuilder;
++
++import javax.persistence.AttributeOverride;
++import javax.persistence.AttributeOverrides;
++import javax.persistence.Column;
++import javax.persistence.Entity;
++import javax.persistence.Table;
++
++@SuperBuilder
++@NoArgsConstructor
++@AttributeOverrides({
++    @AttributeOverride(name = "body", 
++    		       column = @Column(
++			       columnDefinition = "clob"
++			       )
++		       )
++})
++@Entity(name = "DerbyJpaTicketEntity")
++@Table(name = "CasTickets")
++public class DerbyJpaTicketEntity extends BaseTicketEntity {
++    private static final long serialVersionUID = 6546716187959834795L;
++
++}
+diff --git a/support/cas-server-support-jpa-util/src/main/java/org/apereo/cas/jpa/AbstractJpaEntityFactory.java b/support/cas-server-support-jpa-util/src/main/java/org/apereo/cas/jpa/AbstractJpaEntityFactory.java
+index ba352511331..4d4746306f2 100644
+--- a/support/cas-server-support-jpa-util/src/main/java/org/apereo/cas/jpa/AbstractJpaEntityFactory.java
++++ b/support/cas-server-support-jpa-util/src/main/java/org/apereo/cas/jpa/AbstractJpaEntityFactory.java
+@@ -70,4 +70,12 @@ public abstract class AbstractJpaEntityFactory<T> {
+         return this.dialect.contains("MariaDB");
+     }
+ 
++    /**
++     * Is maria db ?
++     *
++     * @return true/false
++     */
++    protected boolean isDerby() {
++        return this.dialect.contains("Derby");
++    }
+ }

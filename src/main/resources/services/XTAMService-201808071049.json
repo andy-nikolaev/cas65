@@ -1,0 +1,22 @@
+{
+  "@class" : "org.apereo.cas.services.RegexRegisteredService",
+  "serviceId" : "https://managed.path.com/xtam/",
+  "name" : "XTAM Service",
+  "id" : 201808071049,
+  "attributeReleasePolicy" : {
+    "@class" : "org.apereo.cas.services.ReturnAllowedAttributeReleasePolicy",
+    "authorizedToReleaseCredentialPassword" : true
+  },
+  "publicKey" : {
+    "@class" : "org.apereo.cas.services.RegisteredServicePublicKeyImpl",
+    "location" : "classpath:casClearPassPublic.key",
+    "algorithm" : "RSA"
+  },
+  "properties" : {
+    "@class" : "java.util.HashMap",
+    "jwtSigningSecret" : {
+      "@class" : "org.apereo.cas.services.DefaultRegisteredServiceProperty",
+      "values" : [ "java.util.HashSet", [ "PXOU8MxJBA8vQxbzMtLYDcqFMsVtBd2IIl3mQ7nloXextMGlXUp6RLuFkh7L5iz1KdfpOL4pOl3jlYpsywSipfqJyYXaAHzquKtlRPbM5YvuzATCtstIGS3gjsA2Rp5P" ] ]
+    }
+  }
+}

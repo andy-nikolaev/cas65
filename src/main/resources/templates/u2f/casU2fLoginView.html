@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+
+<head>
+    <title th:text="#{pam.mfa.deny.pagetitle}"></title>
+</head>
+
+<body id="cas">
+<div layout:fragment="content">
+    <div class="box fl-panel" id="login">
+        <div>
+            <p id="denylogin" th:text="#{pam.mfa.deny.message}" class="denylogin"/>
+        </div>
+    </div>
+</div>
+</body>
+</html>

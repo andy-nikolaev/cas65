@@ -1,0 +1,113 @@
+diff --git a/gradle.properties b/gradle.properties
+index b3e8f1f22c..665380fb22 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -2,7 +2,8 @@
+ # Platform metadata for releases, POM generation, etc.
+ ##################################################
+ group=org.apereo.cas
+-version=6.5.10-SNAPSHOT
++version=6.5.5
++#version=6.5.10-SNAPSHOT
+ projectUrl=https://www.apereo.org/cas
+ projectInceptionYear=2004
+ projectScmUrl=scm:git@github.com:apereo/cas.git
+diff --git a/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/CidraPAPAuthenticator.java b/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/CidraPAPAuthenticator.java
+new file mode 100644
+index 0000000000..3359fb7b55
+--- /dev/null
++++ b/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/CidraPAPAuthenticator.java
+@@ -0,0 +1,31 @@
++package org.apereo.cas.adaptors.radius;
++
++import java.security.NoSuchAlgorithmException;
++
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
++import net.jradius.client.auth.PAPAuthenticator;
++import net.jradius.exception.RadiusException;
++import net.jradius.packet.RadiusPacket;
++import net.jradius.packet.attribute.RadiusAttribute;
++
++public class CidraPAPAuthenticator extends PAPAuthenticator {
++
++       private static final Logger LOGGER = LoggerFactory.getLogger(CidraPAPAuthenticator.class);
++
++       private static final int ATTR_REPLY_MESSAGE = 18;
++
++       @Override
++       public void processChallenge(final RadiusPacket request, final RadiusPacket challenge)
++                       throws RadiusException, NoSuchAlgorithmException {
++               LOGGER.info("Processing challenge response from server: {}", challenge);
++
++               RadiusAttribute replyMessageAttr = challenge.findAttribute(ATTR_REPLY_MESSAGE);
++
++               // TODO get reply message value
++
++               String msg = String.format("Access denined by challenge response with message: %s", replyMessageAttr);
++               throw new RadiusException(msg);
++       }
++}
+diff --git a/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/RadiusProtocol.java b/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/RadiusProtocol.java
+index 6311fe21e8..95c29f1931 100644
+--- a/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/RadiusProtocol.java
++++ b/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/RadiusProtocol.java
+@@ -54,6 +54,9 @@ public enum RadiusProtocol {
+     /**
+      * The peap.
+      */
++    /** Imprivata Cidra PAP protocol */
++    CIDRA_PAP("cidra-pap"),
++
+     PEAP("peap");
+ 
+     /**
+diff --git a/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/RadiusProtocolFactory.java b/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/RadiusProtocolFactory.java
+new file mode 100644
+index 0000000000..d2747edbde
+--- /dev/null
++++ b/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/RadiusProtocolFactory.java
+@@ -0,0 +1,21 @@
++package org.apereo.cas.adaptors.radius;
++
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
++import net.jradius.client.RadiusClient;
++import net.jradius.client.auth.RadiusAuthenticator;
++
++public class RadiusProtocolFactory {
++
++       private static final Logger LOGGER = LoggerFactory.getLogger(RadiusProtocolFactory.class);
++
++       public static RadiusAuthenticator getAuthProtocol(String name) {
++               if(RadiusProtocol.CIDRA_PAP.getName().equals(name.toLowerCase())) {
++                       LOGGER.info("Select cidra-pap protocol support.");
++                       return new CidraPAPAuthenticator();
++               } else {
++                       return RadiusClient.getAuthProtocol(name);
++               }
++       }
++}
+diff --git a/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/server/AbstractRadiusServer.java b/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/server/AbstractRadiusServer.java
+index 5680d68159..f7934d3d48 100644
+--- a/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/server/AbstractRadiusServer.java
++++ b/support/cas-server-support-radius-core/src/main/java/org/apereo/cas/adaptors/radius/server/AbstractRadiusServer.java
+@@ -36,6 +36,7 @@ import java.io.Serializable;
+ import java.security.Security;
+ import java.util.Optional;
+ 
++import  org.apereo.cas.adaptors.radius.RadiusProtocolFactory;
+ /**
+  * Implementation of a RadiusServer that utilizes the JRadius packages available
+  * at <a href="http://jradius.sf.net">http://jradius.sf.net</a>.
+@@ -138,7 +139,7 @@ public abstract class AbstractRadiusServer implements RadiusServer {
+      * @return the radius authenticator
+      */
+     public RadiusAuthenticator getRadiusAuthenticator() {
+-        return RadiusClient.getAuthProtocol(configurationContext.getProtocol().getName());
++        return RadiusProtocolFactory.getAuthProtocol(configurationContext.getProtocol().getName());
+     }
+ 
+     /**

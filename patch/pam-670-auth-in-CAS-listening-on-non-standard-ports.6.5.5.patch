@@ -1,0 +1,42 @@
+diff --git a/core/cas-server-core-rest-api/src/main/java/org/apereo/cas/rest/factory/DefaultTicketGrantingTicketResourceEntityResponseFactory.java b/core/cas-server-core-rest-api/src/main/java/org/apereo/cas/rest/factory/DefaultTicketGrantingTicketResourceEntityResponseFactory.java
+index 8789a93eca..d59a683f45 100644
+--- a/core/cas-server-core-rest-api/src/main/java/org/apereo/cas/rest/factory/DefaultTicketGrantingTicketResourceEntityResponseFactory.java
++++ b/core/cas-server-core-rest-api/src/main/java/org/apereo/cas/rest/factory/DefaultTicketGrantingTicketResourceEntityResponseFactory.java
+@@ -17,6 +17,9 @@ import org.springframework.http.ResponseEntity;
+ import javax.servlet.http.HttpServletRequest;
+ 
+ import java.net.URI;
++import com.google.common.base.Splitter;
++import java.util.List;
++
+ 
+ /**
+  * This is {@link DefaultTicketGrantingTicketResourceEntityResponseFactory}.
+@@ -63,7 +66,26 @@ public class DefaultTicketGrantingTicketResourceEntityResponseFactory implements
+     @Override
+     @SuppressWarnings("JdkObsolete")
+     public ResponseEntity<String> build(final TicketGrantingTicket ticketGrantingTicket, final HttpServletRequest request) throws Exception {
+-        val ticketReference = new URI(request.getRequestURL().toString() + '/' + ticketGrantingTicket.getId());
++        String host = request.getHeader("host");
++        String addr = null;
++        String port = null;
++        if (StringUtils.isNotBlank(host)) {
++                List<String> hostParams = Splitter.on(':').splitToList(host);
++                        if (hostParams.size() == 2) {
++                                addr = hostParams.get(0);
++                        if (!"80".equals(hostParams.get(1)) && !"443".equals(hostParams.get(1))) {
++                                port = hostParams.get(1);
++                        }
++                }
++        }
++
++        String requestUrl = request.getRequestURL().toString();
++        if (port != null && !requestUrl.contains(host)) {
++                requestUrl = requestUrl.replace(addr, host);
++        }
++
++        final URI ticketReference = new URI(requestUrl + '/' + ticketGrantingTicket.getId());
++
+         val headers = new HttpHeaders();
+         headers.setLocation(ticketReference);
+         val response = getResponse(ticketGrantingTicket, request, ticketReference, headers);
