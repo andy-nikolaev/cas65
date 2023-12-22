@@ -40,6 +40,23 @@ buildscript {
     }
 }
 
+plugins {
+  id 'maven-publish'
+}
+
+publishing {
+  repositories {
+    maven {
+      name = "GitHubPackages"
+      url = "https://maven.pkg.github.com/andy-nikolaev/cas65"
+      credentials {
+        username = System.getenv("GITHUB_ACTOR")
+        password = System.getenv("GITHUB_TOKEN")
+      }
+    }
+  }
+}
+
 repositories {
     if (project.privateRepoUrl) {
       maven {
