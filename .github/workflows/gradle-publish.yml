@@ -35,7 +35,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up JDK 21
+    - name: Set up JDK ${{ env.JDK_CURRENT }}
       uses: actions/setup-java@v3
       with:
         java-version: ${{ env.JDK_CURRENT }}
@@ -44,7 +44,7 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Build with Gradle
-      run: cd support/cas-server-support-rest; ../../gradlew clean build ${{ env.GRADLE_BUILD_OPTIONS }}
+      run: ./gradlew clean build ${{ env.GRADLE_BUILD_OPTIONS }}
       #uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
       #with:
       #  arguments: build
