@@ -41,20 +41,8 @@ buildscript {
 }
 
 plugins {
-  id 'maven-publish'
-}
-
-publishing {
-  repositories {
-    maven {
-      name = "GitHubPackages"
-      url = "https://maven.pkg.github.com/andy-nikolaev/cas65"
-      credentials {
-        username = System.getenv("GITHUB_ACTOR")
-        password = System.getenv("GITHUB_TOKEN")
-      }
-    }
-  }
+    id 'java-library'
+    id 'maven-publish'
 }
 
 repositories {
@@ -194,3 +182,99 @@ implementation "org.apereo.cas:cas-server-support-radius:${project.'cas.version'
     developmentOnly "org.springframework.boot:spring-boot-devtools:${project.springBootVersion}"
 }
 
+/*
+plugins {
+  id 'maven-publish'
+}
+
+publishing {
+  repositories {
+    maven {
+      name = "GitHubPackages"
+      url = "https://maven.pkg.github.com/andy-nikolaev/cas65"
+      credentials {
+        username = System.getenv("GITHUB_ACTOR")
+        password = System.getenv("GITHUB_TOKEN")
+      }
+    }
+  }
+}
+*/
+tasks.withType(GenerateModuleMetadata).configureEach {
+    // The value 'enforced-platform' is provided in the validation
+    // error message you got
+    suppressedValidationErrors.add('enforced-platform')
+}
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/andy-nikolaev/cas65")
+	    metadataSources {
+            	gradleMetadata()
+            }
+            credentials {
+                //username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                //password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+                username = "ÄndyNikolaev"
+                password = "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"
+            }
+        }
+    }
+
+    publications {
+        gpr(MavenPublication) {
+        //gpr(MavenPublication) {
+          //  from components.java
+            from components.web
+        }
+    }
+}
+
+/*
+publications {
+    mavenWeb(MavenPublication) {
+        from components.web
+    }
+}
+*/
+/*
+publications {
+    mavenWeb(MavenPublication) {
+        from components.web
+    }
+}
+*/
+/*
+publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+*/
+/*
+plugins {
+    id("maven-publish") apply false
+}
+subprojects {
+    apply plugin: "maven-publish"
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/andy-nikolaev/cas65")
+                credentials {
+                    username = "ÄndyNikolaev"
+                    password = "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"
+                }
+            }
+        }
+        publications {
+            gpr(MavenPublication) {
+                from(components.java)
+            }
+        }
+    }
+}
+*/
