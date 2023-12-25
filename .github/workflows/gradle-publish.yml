@@ -53,10 +53,10 @@ jobs:
     # the publishing section of your build.gradle
     - uses: actions/delete-package-versions@v4
       with: 
-        owner: 'github'
+       # owner: 'github'
         package-name: 'org.apereo.cas.cas'
         package-type: 'maven'
-        token: ${{ secrets.GITHUB_TOKEN }}
+       # token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Publish to GitHub Packages
       uses: gradle/gradle-build-action@v2
